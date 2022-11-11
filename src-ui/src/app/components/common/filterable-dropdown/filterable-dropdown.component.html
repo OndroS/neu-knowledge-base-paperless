@@ -1,0 +1,47 @@
+<div class="btn-group w-100" ngbDropdown role="group" (openChange)="dropdownOpenChange($event)" #dropdown="ngbDropdown">
+  <button class="btn btn-sm" id="dropdown{{title}}" ngbDropdownToggle [ngClass]="!editing && selectionModel.selectionSize() > 0 ? 'btn-primary' : 'btn-outline-primary'">
+    <svg class="toolbaricon" fill="currentColor">
+      <use attr.xlink:href="assets/bootstrap-icons.svg#{{icon}}" />
+    </svg>
+    <div class="d-none d-sm-inline">&nbsp;{{title}}</div>
+    <ng-container *ngIf="!editing && selectionModel.selectionSize() > 0">
+      <div *ngIf="multiple" class="position-absolute top-0 start-100 translate-middle badge bg-secondary border border-light text-light rounded-pill">
+        {{selectionModel.totalCount}}<span class="visually-hidden">selected</span>
+      </div>
+      <div *ngIf="!multiple" class="position-absolute top-0 start-100 p-2 translate-middle badge bg-secondary border border-light rounded-circle">
+        <span class="visually-hidden">selected</span>
+      </div>
+    </ng-container>
+  </button>
+  <div class="dropdown-menu py-0 shadow" ngbDropdownMenu attr.aria-labelledby="dropdown{{title}}">
+    <div class="list-group list-group-flush">
+      <div *ngIf="!editing && multiple" class="list-group-item d-flex">
+        <div class="btn-group btn-group-xs flex-fill">
+          <input [(ngModel)]="selectionModel.logicalOperator" [disabled]="!operatorToggleEnabled" (ngModelChange)="selectionModel.toggleOperator()" type="radio" class="btn-check" id="logicalOperatorAnd" value="and">
+          <label class="btn btn-outline-primary" for="logicalOperatorAnd" i18n>All</label>
+          <input [(ngModel)]="selectionModel.logicalOperator" [disabled]="!operatorToggleEnabled" (ngModelChange)="selectionModel.toggleOperator()" type="radio" class="btn-check" id="logicalOperatorOr" value="or">
+          <label class="btn btn-outline-primary" for="logicalOperatorOr" i18n>Any</label>
+        </div>
+      </div>
+      <div class="list-group-item">
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="text" [(ngModel)]="filterText" [placeholder]="filterPlaceholder" (keyup.enter)="listFilterEnter()" #listFilterTextInput>
+        </div>
+      </div>
+      <div *ngIf="selectionModel.items" class="items">
+        <ng-container *ngFor="let item of selectionModel.itemsSorted | filter: filterText">
+          <app-toggleable-dropdown-button *ngIf="allowSelectNone || item.id" [item]="item" [state]="selectionModel.get(item.id)" (toggle)="selectionModel.toggle(item.id)" (exclude)="excludeClicked(item.id)"></app-toggleable-dropdown-button>
+        </ng-container>
+      </div>
+      <button *ngIf="editing" class="list-group-item list-group-item-action bg-light" (click)="applyClicked()" [disabled]="!modelIsDirty">
+        <small class="ms-2" [ngClass]="{'fw-bold': modelIsDirty}" i18n>Apply</small>
+        <svg width="1.5em" height="1em" viewBox="0 0 16 16" fill="currentColor">
+          <use xlink:href="assets/bootstrap-icons.svg#arrow-right" />
+        </svg>
+      </button>
+      <div *ngIf="!editing && multiple" class="list-group-item list-group-item-note pt-1 pb-2">
+        <small i18n>Click again to exclude items.</small>
+      </div>
+    </div>
+  </div>
+</div>

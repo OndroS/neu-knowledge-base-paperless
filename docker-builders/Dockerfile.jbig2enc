@@ -1,0 +1,35 @@
+# This Dockerfile compiles the jbig2enc library
+# Inputs:
+#    - JBIG2ENC_VERSION - the Git tag to checkout and build
+
+FROM debian:bullseye-slim as main
+
+LABEL org.opencontainers.image.description="A intermediate image with jbig2enc built"
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG JBIG2ENC_VERSION
+
+ARG BUILD_PACKAGES="\
+  build-essential \
+  automake \
+  libtool \
+  libleptonica-dev \
+  zlib1g-dev \
+  git \
+  ca-certificates"
+
+WORKDIR /usr/src/jbig2enc
+
+RUN set -eux \
+  && echo "Installing build tools" \
+    && apt-get update --quiet \
+    && apt-get install --yes --quiet --no-install-recommends ${BUILD_PACKAGES} \
+  && echo "Building jbig2enc" \
+    && git clone --quiet --branch $JBIG2ENC_VERSION https://github.com/agl/jbig2enc . \
+    && ./autogen.sh \
+    && ./configure \
+    && make \
+  && echo "Cleaning up image" \
+    && apt-get -y purge ${BUILD_PACKAGES} \
+    && apt-get -y autoremove --purge \
+    && rm -rf /var/lib/apt/lists/*
